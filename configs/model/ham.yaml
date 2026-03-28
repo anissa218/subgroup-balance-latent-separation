@@ -1,0 +1,20 @@
+_target_: src.models.ham_module.HAMLitModule
+
+optimizer:
+  _target_: torch.optim.Adam
+  _partial_: true
+  lr: 0.00015428388141273573
+  weight_decay: 0.000337033877581107
+
+scheduler: ${scheduler}
+
+loss_weight_class_0: 1.0
+
+net:
+  _target_: src.models.components.dense_net_121.DenseNet121
+  # input_size: 784
+  output_size: 2
+  freeze_backbone: false
+
+# compile model for faster training with pytorch 2.0
+compile: false

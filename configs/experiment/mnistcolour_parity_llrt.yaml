@@ -1,0 +1,59 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /data: mnistcolour
+  - override /model: mnistcolour
+  - override /callbacks: default
+  - override /trainer: default
+  - override /scheduler: reduce
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+tags: ["mnistcolour"]
+
+seed: 42
+
+trainer:
+  min_epochs: 1
+  max_epochs: 50
+  # gradient_clip_val: 0.5
+
+model:
+  optimizer:
+    lr: 0.001587
+    weight_decay: 0.001537
+  compile: false
+  loss_weight_class_0: 1.0
+  net:
+    freeze_backbone: true
+
+data:
+  batch_size: 128
+  train_data_path: ${paths.root_dir}/data/MNIST/parity/train_labels_23840_42.csv
+  val_data_path: ${paths.root_dir}/data/MNIST/parity/val_labels_5950_42.csv
+  test_data_path: ${paths.root_dir}/data/MNIST/parity/test_labels_pretrain.csv
+  train_images_path: ${paths.root_dir}/data/MNIST/parity/train_val_images.pt
+  val_images_path: ${paths.root_dir}/data/MNIST/parity/train_val_images.pt
+  test_images_path: ${paths.root_dir}/data/MNIST/parity/test_images.pt
+
+callbacks:
+  model_checkpoint:
+    monitor: "val/bal_acc"
+    mode: "max"
+
+  early_stopping:
+    monitor: "val/bal_acc"
+    mode: "max"
+    patience: 10
+    
+    
+logger:
+  wandb:
+    tags: ${tags}
+    group: "mnistcolour"
+  aim:
+    experiment: "mnistcolour"

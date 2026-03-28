@@ -1,0 +1,21 @@
+# first stage: linear warmup from LR=0 to target LR
+warmup:
+  _target_: torch.optim.lr_scheduler.LinearLR
+  _partial_: true
+  start_factor: 0.001    # start at 0.1% of base LR
+  total_iters: 5         # warmup epochs
+
+# second stage: cosine decay
+cosine:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+  _partial_: true
+  T_max: 95              # total_epochs - warmup_epochs
+  eta_min: 1e-6
+
+# chain them together
+_target_: torch.optim.lr_scheduler.SequentialLR
+_partial_: true
+schedulers:
+  - ${scheduler.warmup}
+  - ${scheduler.cosine}
+milestones: [5]          # switch after warmup_epochs

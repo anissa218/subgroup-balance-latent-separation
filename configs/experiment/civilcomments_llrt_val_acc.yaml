@@ -1,0 +1,60 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /data: civilcomments
+  - override /model: civilcomments
+  - override /callbacks: default
+  - override /trainer: default
+  - override /scheduler: cosine_warmup
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+tags: ["civilcomments"]
+
+seed: 42
+
+trainer:
+  min_epochs: 1
+  max_epochs: 30
+  gradient_clip_val: 0.5
+
+model:
+  net:
+    _target_: src.models.components.bert_classifier.cusBERTClassifier
+    freeze_backbone: true
+  optimizer:
+    _target_: torch.optim.AdamW 
+    lr: 0.0006 #0.000222
+    weight_decay: 0.020390
+  compile: false
+  loss_weight_class_0: 1.0
+
+data:
+  batch_size: 256
+  train_data_path: ${paths.data_dir}/CIVILCOMMENTS/Random_binary/train_0_42.csv
+  val_data_path: ${paths.data_dir}/CIVILCOMMENTS/Random_binary/val_0_42.csv
+  test_data_path: ${paths.data_dir}/CIVILCOMMENTS/test_labels.csv
+
+callbacks:
+  model_checkpoint:
+    monitor: "val/acc"
+    mode: "max"
+
+  early_stopping:
+    monitor: "val/acc"
+    mode: "max"
+    patience: 5
+
+    
+logger:
+  wandb:
+    tags: ${tags}
+    group: "ham"
+  aim:
+    experiment: "ham"
+
+ckpt_path: '/gpfs3/well/papiez/users/hri611/python/data-centric-bias/logs/alloc_baseline_pretrain/runs/2025-09-12_17-38-02-257500/checkpoints/epoch_004.ckpt'

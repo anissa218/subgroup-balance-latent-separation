@@ -1,0 +1,52 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /data: fmmimic
+  - override /model: fmmimic
+  - override /callbacks: default
+  - override /trainer: default
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+tags: ["fmmimic"]
+
+seed: 42
+
+trainer:
+  min_epochs: 1
+  max_epochs: 15
+  gradient_clip_val: 0.5
+
+model:
+  optimizer:
+    lr: 0.001325 #0.001172
+    weight_decay: 0.000441 # 0.000417
+  compile: false
+  loss_weight_class_0: 1.0
+  net:
+    output_size: 2
+    hidden_size: 128 # could try something later if linear clasifier doesn't work
+    dropout: 0.328187
+
+data:
+  batch_size: 64
+  
+callbacks:
+  model_checkpoint:
+    monitor: "val/bal_acc"
+    mode: "max"
+
+  early_stopping:
+    monitor: "val/bal_acc"
+    mode: "max"
+    
+logger:
+  wandb:
+    tags: ${tags}
+    group: "fmmimic"
+  aim:
+    experiment: "fmmimic"

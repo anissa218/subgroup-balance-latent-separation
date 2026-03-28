@@ -1,0 +1,20 @@
+_target_: src.models.fmmimic_module.FMMIMICLitModule
+
+optimizer:
+  _target_: torch.optim.AdamW
+  _partial_: true
+  lr: 0.001172
+  weight_decay: 0.000417
+
+scheduler: ${scheduler}
+
+loss_weight_class_0: 1.0
+
+net:
+  _target_: src.models.components.embedding_classifier.EmbeddingClassifier
+  output_size: 2
+  hidden_size: 0 # could try something later if linear clasifier doesn't work
+  dropout: 0
+  
+# compile model for faster training with pytorch 2.0
+compile: false
