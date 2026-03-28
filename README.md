@@ -2,7 +2,7 @@ ______________________________________________________________________
 
 <div align="center">
 
-# Data-Centric Bias in Machine Learning
+# When does Subgroup Balance Matter? Predicting Performance Sensitivity from Latent Separability
 
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
 <a href="https://hydra.cc/"><img alt="Config: Hydra" src="https://img.shields.io/badge/Config-Hydra-89b8cd"></a>
@@ -11,13 +11,7 @@ ______________________________________________________________________
 
 ## Description
 
-This repository contains the code for our paper on data-centric bias in machine learning. We study how the demographic composition of training data affects model performance across subgroups, and how this relates to the separation of subgroup representations in a pretrained model's embedding space.
-
-Key contributions:
-- **Allocation sensitivity analysis**: measuring how model subgroup performance changes as the proportion of a demographic group in training data is varied from 0% to 100%
-- **Representation distance metrics**: quantifying how separated subgroup representations are in a pretrained model's latent space (Wasserstein distance, Fréchet distance, total variation distance)
-- **Correlation analysis**: showing that representation separation predicts allocation sensitivity across datasets and demographic attributes
-- **Foundation model experiments**: extending the analysis to CheXagent and RAD-DINO-MAIRA-2 on medical imaging data
+This repository contains the code for our paper on the link between sensitivity to subgroup allocation and latent separation of subgroup embeddings. We explore how the distribution of training data affects model performance across subgroups, and how this relates to the separation of subgroup representations in a pretrained model's latent space.
 
 Experiments span four datasets: **MNIST**, **MIMIC-CXR** (chest X-ray), **HAM10000** (skin lesion), and **CivilComments** (text toxicity).
 
@@ -28,7 +22,7 @@ Experiments span four datasets: **MNIST**, **MIMIC-CXR** (chest X-ray), **HAM100
 ```bash
 # Clone the repository
 git clone https://github.com/YOUR_USERNAME/data-centric-bias
-cd data-centric-bias
+cd subgroup-balance-latent-separation
 
 # Create and activate a virtual environment (Python 3.11 recommended)
 python -m venv env
@@ -81,13 +75,13 @@ Download from [Jigsaw Unintended Bias in Toxicity Classification](https://www.ka
 Expected path: `data/CIVILCOMMENTS/`
 
 #### Foundation model embeddings (CheXagent / RAD-DINO-MAIRA-2)
-Precomputed embeddings for MIMIC-CXR can be generated using the scripts in `scripts/data_processing/`:
+Precomputed embeddings for MIMIC-CXR can be generated using the scripts in `scripts/data_processing/` using model weights shared on HuggingFace:
 ```bash
 # CheXagent embeddings
-bash scripts/data_processing/get_chexagent_embeds.sh
+python scripts/data_processing/get_chexagent_embeds.py
 
 # RAD-DINO-MAIRA-2 embeddings
-bash scripts/data_processing/get_maira_embeds.sh
+python scripts/data_processing/get_maira_embeds.py
 ```
 Expected paths: `data/MIMICFM/`, `data/MIMICFM2_Small/`
 
@@ -105,15 +99,14 @@ Experiments are managed with [Hydra](https://hydra.cc/). Set the `PROJECT_ROOT` 
 export PROJECT_ROOT=$(pwd)
 ```
 
+Experiment configs are in `configs/` and run results, logs, and model embeddings are are saved to `logs/` by default.
 ### Example: MIMIC allocation experiments (main experiments)
 
 ```bash
-# Run the LLRT allocation sensitivity experiments on MIMIC
-python src/train.py experiment=mimic_pleural_effusion_alloc_exps \
-    data.subgroup=Gender_binary \
-    data.proportion=50
+# First pre-train a model on MIMIC
+python src/train.py experiment=mimic_pleural_effusion_pretrain seed=42
 
-# Run over all subgroups and proportions (as used in the paper)
+# Then fine-tune it with different over all subgroups and proportions
 for subgroup in Gender_binary Race_cat_binary Age_binary ViewPosition_binary; do
     for proportion in 0 10 20 30 40 50 60 70 80 90 100; do
         python src/train.py experiment=mimic_pleural_effusion_alloc_exps \
@@ -124,26 +117,9 @@ for subgroup in Gender_binary Race_cat_binary Age_binary ViewPosition_binary; do
 done
 ```
 
-### Available experiment configs
+## Analysis notebooks
 
-| Config | Dataset | Description |
-|--------|---------|-------------|
-| `mimic_pleural_effusion_alloc_exps` | MIMIC-CXR | Allocation sensitivity (fine-tuning) |
-| `mimic_pleural_effusion_llrt` | MIMIC-CXR | Linear readout (LLRT) |
-| `ham_alloc_exps` | HAM10000 | Allocation sensitivity |
-| `ham_llrt` | HAM10000 | Linear readout |
-| `civilcomments_alloc_exps` | CivilComments | Allocation sensitivity |
-| `civilcomments_llrt` | CivilComments | Linear readout |
-| `fmmimic_llrt` | MIMIC (CheXagent) | Foundation model LLRT |
-| `fmmimic2_llrt` | MIMIC (RAD-DINO) | Foundation model LLRT |
-
-Run logs are saved to `logs/` by default.
-
----
-
-## Reproducing paper figures
-
-The paper figures are reproduced in the notebooks in `final_notebooks/`. Pre-computed results (distance metrics, allocation sensitivity summaries) are available for download at **[LINK TO DATA REPOSITORY]** — place the downloaded `processed_results/` folder at the root of this repository.
+Main analyses and paper figures are reproduced in the notebooks in `final_notebooks/`. Pre-computed results (distance metrics, allocation sensitivity summaries) are available for download at **[LINK TO DATA REPOSITORY]** — place the downloaded `processed_results/` folder at the root of this repository.
 
 ### Notebooks
 
@@ -184,16 +160,3 @@ In `pretrained_distances.ipynb` and `fm_analysis.ipynb`, set `SKIP_COMPUTE = Fal
 ```
 
 ---
-
-## Citation
-
-If you use this code in your research, please cite:
-
-```bibtex
-@article{your_paper,
-  title   = {Title},
-  author  = {Authors},
-  journal = {Venue},
-  year    = {2025}
-}
-```
