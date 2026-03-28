@@ -119,7 +119,7 @@ done
 
 ## Analysis notebooks
 
-Main analyses and paper figures are reproduced in the notebooks in `final_notebooks/`. Pre-computed results (distance metrics, allocation sensitivity summaries) are available for download at **[LINK TO DATA REPOSITORY]** — place the downloaded `processed_results/` folder at the root of this repository.
+Main analyses and paper figures are reproduced in the notebooks in `final_notebooks/`.
 
 ### Notebooks
 
@@ -129,13 +129,6 @@ Main analyses and paper figures are reproduced in the notebooks in `final_notebo
 | `pretrained_distances.ipynb` | Compute and visualise subgroup representation distances in pretrained models |
 | `finetuned_alloc_sensitivity.ipynb` | Allocation sensitivity analysis and correlation with representation distance |
 | `fm_analysis.ipynb` | Foundation model experiments (CheXagent and RAD-DINO-MAIRA-2) |
-
-To run a notebook:
-```bash
-jupyter notebook final_notebooks/finetuned_alloc_sensitivity.ipynb
-```
-
-In `pretrained_distances.ipynb` and `fm_analysis.ipynb`, set `SKIP_COMPUTE = False` in the config cell to recompute distances from scratch (requires raw model run logs), or leave `SKIP_COMPUTE = True` (default) to load pre-computed results from `processed_results/`.
 
 ---
 
