@@ -1,0 +1,50 @@
+# @package _global_
+#
+# SigLIP LoRA PEFT allocation experiments for Pleural Effusion.
+# Training data distribution is varied per-attribute; call via:
+#   python src/train.py experiment=siglip_peft_pleural_effusion_alloc_exps \
+#       data.train_data_path=... data.val_data_path=... task_name=... seed=42
+
+defaults:
+  - override /data: mimicraw
+  - override /model: siglip_peft
+  - override /callbacks: default
+  - override /trainer: default
+  - override /scheduler: cosine_warmup
+
+tags: ["siglip_peft", "mimic", "pleural_effusion"]
+
+seed: 42
+
+trainer:
+  min_epochs: 1
+  max_epochs: 6
+  gradient_clip_val: 1.0
+
+model:
+  optimizer:
+    _target_: torch.optim.AdamW
+    _partial_: true
+    lr: 5e-5
+    weight_decay: 1e-4
+  loss_weight_class_0: 1.0
+
+data:
+  batch_size: 32
+  train_data_path: ${paths.root_dir}/data/MIMIC/Pleural_Effusion/train_labels.csv.gz
+  val_data_path: ${paths.root_dir}/data/MIMIC/Pleural_Effusion/val_labels.csv.gz
+  test_data_path: ${paths.root_dir}/data/MIMIC/Pleural_Effusion/test_labels.csv.gz
+
+callbacks:
+  model_checkpoint:
+    monitor: "val/bal_acc"
+    mode: "max"
+  early_stopping:
+    monitor: "val/bal_acc"
+    mode: "max"
+    patience: 3
+
+logger:
+  wandb:
+    tags: ${tags}
+    group: "siglip_peft_pleural_effusion"

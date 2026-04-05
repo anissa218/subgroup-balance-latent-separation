@@ -1,0 +1,22 @@
+_target_: src.models.siglip_peft_module.SigLIPPEFTLitModule
+
+optimizer:
+  _target_: torch.optim.AdamW
+  _partial_: true
+  lr: 5e-5
+  weight_decay: 1e-4
+
+scheduler: ${scheduler}
+
+loss_weight_class_0: 1.0
+
+net:
+  _target_: src.models.components.siglip_lora.SigLIPLoRA
+  model_name: "StanfordAIMI/XraySigLIP__vit-b-16-siglip-512__webli"
+  output_size: 2
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  fallback_n_blocks: 4
+
+compile: false
